@@ -40,13 +40,34 @@ Suggested milestones for incremental development:
 
 
 def extract_names(filename):
-    """
-    Given a file name for baby.html, returns a list starting with the year string
-    followed by the name-rank strings in alphabetical order.
-    ['2006', 'Aaliyah 91', Aaron 57', 'Abagail 895', ' ...]
-    """
-    # +++your code here+++
-    return
+    babyMusic = []
+    with open(filename) as f:
+        text = f.read()
+
+    year_match = re.search(r"Popularity\sin\s(\d\d\d\d)", text)
+    if not year_match:
+        print("could not extract year")
+        return None
+    year = year_match.group(1)
+    print("found year: {}".format(year))
+    babyMusic.append(year)
+
+    tuples = re.findall(r"<td>(\d+)</td><td>(\w+)</td><td>(\w+)</td>", text)
+
+    names_to_rank = {}
+    for rank, boy, girl in tuples:
+        if boy not in names_to_rank:
+            names_to_rank[boy] = rank
+        if girl not in names_to_rank:
+            names_to_rank[girl] = rank
+
+    sorted_names = sorted(names_to_rank.keys())
+    for name in sorted_names:
+        babyMusic.append(name + ' ' +names_to_rank[name])
+
+
+
+    return babyMusic
 
 
 def create_parser():
@@ -72,6 +93,16 @@ def main():
 
     # option flag
     create_summary = args.summaryfile
+
+    for filename in file_list:
+        result = extract_names(filename)
+        text = '\n'.join(result)
+
+        if create_summary:
+            with open(filename + '.summary', 'w') as outf:
+                outf.write(text + '\n')
+        else:
+            print(text)
 
     # +++your code here+++
     # For each filename, get the names, then either print the text output
